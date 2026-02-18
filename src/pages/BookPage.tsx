@@ -6,6 +6,8 @@ import { z } from 'zod'
 import { useAuth } from '../auth/useAuth'
 import { supabase } from '../lib/supabase'
 import { buildWhatsappLink, formatBookingWhatsappMessage } from '../lib/whatsapp'
+import { useToast } from '../components/useToast'
+import { logError, logInfo } from '../lib/logger'
 
 type ShopInfo = {
   id: string
@@ -54,6 +56,7 @@ export function BookPage() {
   const { session } = useAuth()
 
   const [shop, setShop] = useState<ShopInfo | null>(null)
+  const { pushToast } = useToast()
   const [packages, setPackages] = useState<PricePackage[]>([])
   const [loadingShop, setLoadingShop] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -96,6 +99,7 @@ export function BookPage() {
 
       if (shopError || !shopData) {
         setSubmitError(shopError?.message ?? 'Shop not found')
+      pushToast('Shop not found', 'error')
         setLoadingShop(false)
         return
       }
@@ -117,7 +121,7 @@ export function BookPage() {
     }
 
     void load()
-  }, [shopId])
+  }, [shopId, pushToast])
 
   const availableTiers = useMemo(() => {
     const set = new Set(
@@ -161,10 +165,14 @@ export function BookPage() {
 
     if (error) {
       setSubmitError(error.message)
+      pushToast('Booking submission failed', 'error')
+      logError('Booking submit failed', error.message)
       return
     }
 
     setReference(data.reference)
+    pushToast('Booking request created', 'success')
+    logInfo('Booking created', data.reference)
     setLastSubmitted(values)
     reset()
   }

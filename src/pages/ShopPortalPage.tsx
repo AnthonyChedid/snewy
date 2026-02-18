@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../components/useToast'
+import { logError } from '../lib/logger'
 
 type Membership = {
   id: string
@@ -34,6 +36,7 @@ const allowedTransitions: Record<ShopBooking['status'], ShopBooking['status'][]>
 export function ShopPortalPage() {
   const { session } = useAuth()
   const [memberships, setMemberships] = useState<Membership[]>([])
+  const { pushToast } = useToast()
   const [bookings, setBookings] = useState<ShopBooking[]>([])
   const [statusFilter, setStatusFilter] = useState<'all' | ShopBooking['status']>('all')
   const [loading, setLoading] = useState(false)
@@ -56,6 +59,8 @@ export function ShopPortalPage() {
 
     if (memberErr) {
       setError(memberErr.message)
+      pushToast('Failed to load staff membership', 'error')
+      logError('Shop membership load failed', memberErr.message)
       setLoading(false)
       return
     }
@@ -82,6 +87,8 @@ export function ShopPortalPage() {
 
     if (bookingErr) {
       setError(bookingErr.message)
+      pushToast('Failed to load bookings', 'error')
+      logError('Shop bookings load failed', bookingErr.message)
     } else {
       setBookings((bookingRows ?? []) as unknown as ShopBooking[])
     }
@@ -119,8 +126,11 @@ export function ShopPortalPage() {
 
     if (error) {
       setError(error.message)
+      pushToast('Failed to save booking update', 'error')
+      logError('Shop booking update failed', error.message)
     } else {
       await load()
+      pushToast('Booking updated', 'success')
     }
 
     setSaving(false)

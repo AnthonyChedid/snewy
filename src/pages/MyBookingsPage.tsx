@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../components/useToast'
+import { logError } from '../lib/logger'
 
 type Booking = {
   id: string
@@ -24,6 +26,7 @@ const statusClass: Record<Booking['status'], string> = {
 export function MyBookingsPage() {
   const { session } = useAuth()
   const [rows, setRows] = useState<Booking[]>([])
+  const { pushToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -37,11 +40,11 @@ export function MyBookingsPage() {
       .select('id,reference,status,start_date,end_date,created_at,shops(name),resorts(name)')
       .order('created_at', { ascending: false })
 
-    if (error) setError(error.message)
+    if (error) { setError(error.message); pushToast('Failed to load bookings', 'error'); logError('Load bookings failed', error.message) }
     else setRows((data ?? []) as unknown as Booking[])
 
     setLoading(false)
-  }, [session])
+  }, [session, pushToast])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -56,7 +59,7 @@ export function MyBookingsPage() {
       .eq('id', id)
       .eq('status', 'pending')
 
-    if (error) setError(error.message)
+    if (error) { setError(error.message); pushToast('Failed to load bookings', 'error'); logError('Load bookings failed', error.message) }
     else await load()
   }
 

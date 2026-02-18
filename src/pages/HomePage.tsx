@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
+import { useToast } from '../components/useToast'
+import { logError, logInfo } from '../lib/logger'
 
 type Resort = {
   id: string
@@ -10,6 +12,7 @@ type Resort = {
 
 export function HomePage() {
   const [connectionMessage, setConnectionMessage] = useState<string>('')
+  const { pushToast } = useToast()
   const [resorts, setResorts] = useState<Resort[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>('')
@@ -23,6 +26,8 @@ export function HomePage() {
       const { data, error } = await supabase.from('resorts').select('id,name,slug').order('name')
       if (error) {
         setError(error.message)
+        pushToast('Failed to load resorts', 'error')
+        logError('Home resorts load failed', error.message)
       } else {
         setResorts(data ?? [])
       }
@@ -30,7 +35,7 @@ export function HomePage() {
     }
 
     void load()
-  }, [])
+  }, [pushToast])
 
   const handleConnectionCheck = async () => {
     void supabase
@@ -41,6 +46,8 @@ export function HomePage() {
     }
 
     setConnectionMessage('Supabase configured ✅')
+    pushToast('Supabase configured', 'success')
+    logInfo('Supabase configured check passed')
   }
 
   return (

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../components/useToast'
+import { logError } from '../lib/logger'
 
 type Resort = { id: string; name: string; slug: string; is_active: boolean }
 type Shop = { id: string; name: string; resort_id: string; whatsapp: string | null; is_active: boolean; resorts: { name: string } | { name: string }[] | null }
@@ -18,6 +20,7 @@ type Price = {
 export function AdminPage() {
   const { session } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
+  const { pushToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -68,6 +71,8 @@ export function AdminPage() {
 
     if (r1.error || r2.error || r3.error) {
       setError(r1.error?.message ?? r2.error?.message ?? r3.error?.message ?? 'Failed loading admin data')
+      pushToast('Failed to load admin data', 'error')
+      logError('Admin load failed', r1.error?.message ?? r2.error?.message ?? r3.error?.message)
     } else {
       setResorts((r1.data ?? []) as Resort[])
       setShops((r2.data ?? []) as Shop[])
@@ -88,7 +93,7 @@ export function AdminPage() {
     e.preventDefault()
     setError('')
     const { error } = await supabase.from('resorts').insert({ name: newResortName, slug: newResortSlug })
-    if (error) setError(error.message)
+    if (error) { setError(error.message); pushToast('Create resort failed', 'error'); logError('Create resort failed', error.message) }
     else {
       setNewResortName('')
       setNewResortSlug('')
@@ -102,7 +107,7 @@ export function AdminPage() {
     const { error } = await supabase
       .from('shops')
       .insert({ resort_id: newShopResortId, name: newShopName, whatsapp: newShopWhatsapp || null })
-    if (error) setError(error.message)
+    if (error) { setError(error.message); pushToast('Create resort failed', 'error'); logError('Create resort failed', error.message) }
     else {
       setNewShopName('')
       setNewShopWhatsapp('')
@@ -121,7 +126,7 @@ export function AdminPage() {
       price_lbp: Number(newPriceLbp),
       includes: newPriceCategory === 'ski' ? 'boots+skis+poles' : 'boots+board',
     })
-    if (error) setError(error.message)
+    if (error) { setError(error.message); pushToast('Create resort failed', 'error'); logError('Create resort failed', error.message) }
     else {
       setNewPriceLbp('')
       await load()
