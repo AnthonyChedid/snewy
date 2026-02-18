@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../auth/useAuth'
 import { supabase } from '../lib/supabase'
+import { buildWhatsappLink, formatBookingWhatsappMessage } from '../lib/whatsapp'
 
 type ShopInfo = {
   id: string
@@ -57,6 +58,7 @@ export function BookPage() {
   const [loadingShop, setLoadingShop] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [reference, setReference] = useState('')
+  const [lastSubmitted, setLastSubmitted] = useState<BookingFormValues | null>(null)
 
   const {
     register,
@@ -161,15 +163,30 @@ export function BookPage() {
     }
 
     setReference(data.reference)
+    setLastSubmitted(values)
     reset()
   }
 
   const whatsappLink = useMemo(() => {
-    if (!shop?.whatsapp || !reference) return null
-    const digits = shop.whatsapp.replace(/\D/g, '')
-    const text = encodeURIComponent(`Hi ${shop.name}, booking request ${reference}.`)
-    return `https://wa.me/${digits}?text=${text}`
-  }, [shop, reference])
+    if (!shop?.whatsapp || !reference || !lastSubmitted) return null
+
+    const text = formatBookingWhatsappMessage({
+      reference,
+      shopName: shop.name,
+      startDate: lastSubmitted.start_date,
+      endDate: lastSubmitted.end_date,
+      gearCategory: lastSubmitted.gear_category,
+      tier: lastSubmitted.tier,
+      riderLevel: lastSubmitted.rider_level,
+      heightCm: Number(lastSubmitted.height_cm),
+      weightKg: Number(lastSubmitted.weight_kg),
+      shoeEu: lastSubmitted.shoe_eu,
+      notes: lastSubmitted.notes,
+      customerEmail: session?.user.email,
+    })
+
+    return buildWhatsappLink(shop.whatsapp, text)
+  }, [lastSubmitted, reference, session?.user.email, shop])
 
   return (
     <section className="mx-auto max-w-2xl space-y-4">
@@ -278,7 +295,7 @@ export function BookPage() {
               Send booking to shop on WhatsApp
             </a>
           ) : (
-            <p className="text-sm">Shop WhatsApp not available yet.</p>
+            <p className="text-sm">Shop WhatsApp not available. Use phone: {shop?.phone ?? 'N/A'}</p>
           )}
         </div>
       )}
