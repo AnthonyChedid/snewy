@@ -8,7 +8,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase env vars are missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env')
 }
 
-export const supabase = createClient(supabaseUrl ?? '', supabaseAnonKey ?? '')
+const safeUrl = supabaseUrl || 'http://127.0.0.1:54321'
+const safeAnonKey = supabaseAnonKey || 'public-anon-key'
+
+export const supabase = createClient(safeUrl, safeAnonKey)
 
 export function isSupabaseConfigured() {
   return Boolean(supabaseUrl && supabaseAnonKey)

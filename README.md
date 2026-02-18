@@ -72,3 +72,12 @@ supabase db push
 ```
 
 Then run `supabase/seed.sql` in Supabase SQL Editor.
+
+
+## Testing
+
+```bash
+npm run test:e2e
+```
+
+CI runs lint, build, and Playwright smoke tests on push/PR.
