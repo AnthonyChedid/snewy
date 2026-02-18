@@ -77,6 +77,8 @@ export function BookPage() {
     },
   })
 
+  // React Hook Form watch is expected here
+  // eslint-disable-next-line react-hooks/incompatible-library
   const selectedCategory = watch('gear_category')
 
   useEffect(() => {

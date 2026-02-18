@@ -90,7 +90,6 @@ export function ShopPortalPage() {
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user.id])
@@ -106,7 +105,7 @@ export function ShopPortalPage() {
     if (!selectedBooking) return
     setNextStatus(selectedBooking.status)
     setResponseNotes(selectedBooking.shop_response_notes ?? '')
-  }, [selectedBooking?.id])
+  }, [selectedBooking])
 
   const saveUpdate = async () => {
     if (!selectedBooking) return
