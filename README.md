@@ -61,3 +61,14 @@ For seed SQL files (added in later stories), run in Supabase SQL Editor or via `
 - [x] Story 01 — bootstrap routes + Tailwind shell
 - [x] Story 02 — Supabase client + env wiring
 - [x] Story 03 — Supabase CLI init + migration baseline
+
+
+## Database seed (Story 04)
+
+After linking project and pushing migrations:
+
+```bash
+supabase db push
+```
+
+Then run `supabase/seed.sql` in Supabase SQL Editor.
