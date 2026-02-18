@@ -1,73 +1,63 @@
-# React + TypeScript + Vite
+# Snewy — Lebanon Ski Rental Aggregator (Web MVP)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Web-first MVP for ski rental request aggregation in Lebanon (Mzaar/Faraya/Laklouk).
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React + Vite + TypeScript
+- Tailwind CSS
+- React Router
+- Supabase (Postgres/Auth/RLS)
+- Playwright (later stories)
 
-## React Compiler
+## Local dev
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Environment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create `.env` from `.env.example`:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
 ```
+
+## Supabase CLI workflow
+
+Supabase CLI version used during setup:
+
+```bash
+supabase --version
+```
+
+### Initialize (already done in this repo)
+
+```bash
+supabase init
+```
+
+### Link your hosted project
+
+```bash
+supabase link --project-ref <your_project_ref>
+```
+
+### Push migrations
+
+```bash
+supabase db push
+```
+
+### (Optional) Seed data
+
+For seed SQL files (added in later stories), run in Supabase SQL Editor or via `supabase db reset` in local workflows.
+
+## Story progress
+
+- [x] Story 01 — bootstrap routes + Tailwind shell
+- [x] Story 02 — Supabase client + env wiring
+- [x] Story 03 — Supabase CLI init + migration baseline
