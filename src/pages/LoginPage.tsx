@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -10,6 +10,18 @@ export function LoginPage() {
   const location = useLocation()
 
   const from = (location.state as { from?: string } | null)?.from
+
+
+  if (!isSupabaseConfigured()) {
+    return (
+      <section className="mx-auto max-w-md space-y-4 rounded-lg border border-amber-200 bg-amber-50 p-5 shadow-sm">
+        <h2 className="text-2xl font-semibold text-amber-900">Login unavailable</h2>
+        <p className="text-sm text-amber-800">
+          Supabase environment variables are missing. Create <code>.env</code> from <code>.env.example</code> first.
+        </p>
+      </section>
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

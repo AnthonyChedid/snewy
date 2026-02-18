@@ -81,3 +81,15 @@ npm run test:e2e
 ```
 
 CI runs lint, build, and Playwright smoke tests on push/PR.
+
+
+## Local run
+
+```bash
+cp .env.example .env
+# set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+npm install
+npm run dev
+```
+
+Without `.env`, catalog/auth pages will show config warnings.
