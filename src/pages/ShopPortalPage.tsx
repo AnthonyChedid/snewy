@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
-import { supabase } from '../lib/supabase'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useToast } from '../components/useToast'
 import { logError } from '../lib/logger'
 
@@ -33,8 +33,43 @@ const allowedTransitions: Record<ShopBooking['status'], ShopBooking['status'][]>
   cancelled: ['cancelled'],
 }
 
+const demoMemberships: Membership[] = [
+  { id: 'demo-member-1', shop_id: 's1', role: 'staff', shops: { name: 'SnowPro Mzaar' } },
+]
+
+const demoBookings: ShopBooking[] = [
+  {
+    id: 'demo-b1',
+    reference: 'SNW-DEMO-1001',
+    status: 'pending',
+    created_at: new Date().toISOString(),
+    start_date: '2026-02-20',
+    end_date: '2026-02-22',
+    rider_level: 'beginner',
+    gear_category: 'ski',
+    tier: 'basic',
+    shop_response_notes: null,
+    shops: { name: 'SnowPro Mzaar' },
+  },
+  {
+    id: 'demo-b2',
+    reference: 'SNW-DEMO-1002',
+    status: 'confirmed',
+    created_at: new Date().toISOString(),
+    start_date: '2026-02-21',
+    end_date: '2026-02-21',
+    rider_level: 'intermediate',
+    gear_category: 'snowboard',
+    tier: 'standard',
+    shop_response_notes: 'Arrive before 8:30 AM',
+    shops: { name: 'SnowPro Mzaar' },
+  },
+]
+
 export function ShopPortalPage() {
   const { session } = useAuth()
+  const demoMode = !isSupabaseConfigured()
+
   const [memberships, setMemberships] = useState<Membership[]>([])
   const { pushToast } = useToast()
   const [bookings, setBookings] = useState<ShopBooking[]>([])
@@ -48,6 +83,14 @@ export function ShopPortalPage() {
   const [saving, setSaving] = useState(false)
 
   const load = async () => {
+    if (demoMode) {
+      setMemberships(demoMemberships)
+      setBookings(demoBookings)
+      setError('')
+      setLoading(false)
+      return
+    }
+
     if (!session) return
 
     setLoading(true)
@@ -99,7 +142,7 @@ export function ShopPortalPage() {
   useEffect(() => {
     void load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user.id])
+  }, [session?.user.id, demoMode])
 
   const filtered = useMemo(() => {
     if (statusFilter === 'all') return bookings
@@ -119,9 +162,22 @@ export function ShopPortalPage() {
     setSaving(true)
     setError('')
 
+    if (demoMode) {
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === selectedBooking.id
+            ? { ...b, status: nextStatus, shop_response_notes: responseNotes.trim() || null }
+            : b,
+        ),
+      )
+      pushToast('Demo booking updated', 'success')
+      setSaving(false)
+      return
+    }
+
     const { error } = await supabase
       .from('booking_requests')
-      .update({ status: nextStatus, shop_response_notes: responseNotes || null })
+      .update({ status: nextStatus, shop_response_notes: responseNotes.trim() || null })
       .eq('id', selectedBooking.id)
 
     if (error) {
@@ -136,11 +192,24 @@ export function ShopPortalPage() {
     setSaving(false)
   }
 
-  if (!session) return <p className="rounded-md bg-amber-50 p-3 text-amber-800">Login required.</p>
+  if (!session && !demoMode) {
+    return (
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">Shop Portal</h2>
+        <p className="rounded-md bg-amber-50 p-3 text-amber-800">Login required with a shop staff account.</p>
+      </section>
+    )
+  }
 
   return (
     <section className="space-y-4">
       <h2 className="text-2xl font-semibold">Shop Portal</h2>
+
+      {demoMode && (
+        <p className="rounded-md bg-amber-50 p-3 text-amber-800">
+          Demo mode enabled: you can test filtering and status updates without a real staff account.
+        </p>
+      )}
 
       {loading && <p className="text-slate-600">Loading shop data...</p>}
       {error && <p className="rounded-md bg-red-50 p-3 text-red-700">{error}</p>}

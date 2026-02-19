@@ -81,3 +81,11 @@ npm run test:e2e
 ```
 
 CI runs lint, build, and Playwright smoke tests on push/PR.
+
+
+## Shop staff roadmap testing
+
+- Open `/shop`
+- In demo mode (no `.env`), sample memberships + requests are loaded
+- Select a request, change status, add response notes, and save
+- Once Supabase is configured + logged in with a real staff user, the same page uses live data and persists updates

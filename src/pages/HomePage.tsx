@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useToast } from '../components/useToast'
 import { logError, logInfo } from '../lib/logger'
+import { demoResorts } from '../lib/demoData'
 
 type Resort = {
   id: string
@@ -68,7 +69,7 @@ export function HomePage() {
 
       {!isSupabaseConfigured() && (
         <p className="rounded-md bg-amber-50 p-3 text-amber-800">
-          Set Supabase env variables to load resorts from database.
+          Running in demo mode. Set Supabase env variables in <code>.env</code> for live data.
         </p>
       )}
 
@@ -76,7 +77,7 @@ export function HomePage() {
       {error && <p className="rounded-md bg-red-50 p-3 text-red-700">{error}</p>}
 
       <div className="grid gap-3 sm:grid-cols-3">
-        {resorts.map((resort) => (
+        {(isSupabaseConfigured() ? resorts : demoResorts).map((resort) => (
           <Link
             key={resort.id}
             to={`/resorts/${resort.slug}`}

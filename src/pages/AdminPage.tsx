@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
-import { supabase } from '../lib/supabase'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useToast } from '../components/useToast'
 import { logError } from '../lib/logger'
 
@@ -93,7 +93,7 @@ export function AdminPage() {
     e.preventDefault()
     setError('')
     const { error } = await supabase.from('resorts').insert({ name: newResortName, slug: newResortSlug })
-    if (error) { setError(error.message); pushToast('Create resort failed', 'error'); logError('Create resort failed', error.message) }
+    if (error) { setError(error.message); pushToast('Create shop failed', 'error'); logError('Create shop failed', error.message) }
     else {
       setNewResortName('')
       setNewResortSlug('')
@@ -107,7 +107,7 @@ export function AdminPage() {
     const { error } = await supabase
       .from('shops')
       .insert({ resort_id: newShopResortId, name: newShopName, whatsapp: newShopWhatsapp || null })
-    if (error) { setError(error.message); pushToast('Create resort failed', 'error'); logError('Create resort failed', error.message) }
+    if (error) { setError(error.message); pushToast('Create package failed', 'error'); logError('Create package failed', error.message) }
     else {
       setNewShopName('')
       setNewShopWhatsapp('')
@@ -133,7 +133,15 @@ export function AdminPage() {
     }
   }
 
-  if (!session) return <p className="rounded-md bg-amber-50 p-3 text-amber-800">Login required.</p>
+  if (!session) {
+    return (
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">Admin Portal</h2>
+        <p className="rounded-md bg-amber-50 p-3 text-amber-800">Login required with an admin account.</p>
+        {!isSupabaseConfigured() && <p className="rounded-md bg-slate-100 p-3 text-slate-700">Demo: this page manages resorts, shops, and packages once env/login are configured.</p>}
+      </section>
+    )
+  }
 
 
   const resortLabel = (r: Shop['resorts']) => {

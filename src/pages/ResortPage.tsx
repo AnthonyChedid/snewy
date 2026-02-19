@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
+import { demoPackages, demoResorts, demoShops } from '../lib/demoData'
 
 type Resort = { id: string; name: string; slug: string }
 type Shop = {
@@ -32,8 +33,10 @@ export function ResortPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const demoMode = !isSupabaseConfigured()
+
   useEffect(() => {
-    if (!slug || !isSupabaseConfigured()) return
+    if (!slug || demoMode) return
 
     const load = async () => {
       setLoading(true)
@@ -92,30 +95,33 @@ export function ResortPage() {
     }
 
     void load()
-  }, [slug])
+  }, [slug, demoMode])
+
+  const demoResort = demoResorts.find((r) => r.slug === slug) ?? null
+  const displayResort = demoMode ? demoResort : resort
+  const displayShops = demoMode && demoResort ? demoShops.filter((s) => s.resort_id === demoResort.id) : shops
+  const displayPackages = demoMode ? (demoPackages as PricePackage[]) : packages
 
   const packagesByShop = useMemo(() => {
     const map = new Map<string, PricePackage[]>()
-    for (const p of packages) {
+    for (const p of displayPackages) {
       if (!map.has(p.shop_id)) map.set(p.shop_id, [])
       map.get(p.shop_id)!.push(p)
     }
     return map
-  }, [packages])
+  }, [displayPackages])
 
-  if (!isSupabaseConfigured()) {
-    return <p className="rounded-md bg-amber-50 p-3 text-amber-800">Supabase env is missing. Configure `.env` first.</p>
-  }
 
   return (
     <section className="space-y-4">
-      <h2 className="text-2xl font-semibold">{resort ? `${resort.name} shops` : `Resort: ${slug}`}</h2>
+      <h2 className="text-2xl font-semibold">{displayResort ? `${displayResort.name} shops` : `Resort: ${slug}`}</h2>
+      {demoMode && <p className="rounded-md bg-amber-50 p-3 text-amber-800">Demo mode: showing sample shops and prices.</p>}
       {loading && <p className="text-slate-600">Loading shops and pricing...</p>}
       {error && <p className="rounded-md bg-red-50 p-3 text-red-700">{error}</p>}
-      {!loading && !error && shops.length === 0 && <p className="rounded-md bg-slate-100 p-3 text-slate-700">No shops yet.</p>}
+      {!loading && !error && displayShops.length === 0 && <p className="rounded-md bg-slate-100 p-3 text-slate-700">No shops yet.</p>}
 
       <div className="space-y-4">
-        {shops.map((shop) => {
+        {displayShops.map((shop) => {
           const rows = packagesByShop.get(shop.id) ?? []
           return (
             <article key={shop.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">

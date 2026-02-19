@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
-import { supabase } from '../lib/supabase'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useToast } from '../components/useToast'
 import { logError } from '../lib/logger'
 
@@ -63,7 +63,15 @@ export function MyBookingsPage() {
     else await load()
   }
 
-  if (!session) return <p className="rounded-md bg-amber-50 p-3 text-amber-800">Login required.</p>
+  if (!session) {
+    return (
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">My Bookings</h2>
+        <p className="rounded-md bg-amber-50 p-3 text-amber-800">Login required to view real bookings.</p>
+        {!isSupabaseConfigured() && <p className="rounded-md bg-slate-100 p-3 text-slate-700">Demo: after env setup and login, your booking history appears here with cancel actions for pending items.</p>}
+      </section>
+    )
+  }
 
   return (
     <section className="space-y-4">

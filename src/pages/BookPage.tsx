@@ -4,10 +4,11 @@ import { useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../auth/useAuth'
-import { supabase } from '../lib/supabase'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { buildWhatsappLink, formatBookingWhatsappMessage } from '../lib/whatsapp'
 import { useToast } from '../components/useToast'
 import { logError, logInfo } from '../lib/logger'
+import { demoShops } from '../lib/demoData'
 
 type ShopInfo = {
   id: string
@@ -88,6 +89,22 @@ export function BookPage() {
     if (!shopId) return
 
     const load = async () => {
+      if (!isSupabaseConfigured()) {
+        const demo = demoShops.find((s) => s.id === shopId)
+        if (!demo) {
+          setSubmitError('Shop not found')
+          return
+        }
+        setShop({
+          id: demo.id,
+          name: demo.name,
+          resort_id: demo.resort_id,
+          whatsapp: demo.whatsapp ?? null,
+          phone: null,
+          resorts: { id: demo.resort_id, name: 'Demo Resort', slug: 'mzaar' },
+        })
+        return
+      }
       setLoadingShop(true)
       setSubmitError('')
 
@@ -141,6 +158,15 @@ export function BookPage() {
     }
     if (!shop) {
       setSubmitError('Shop not found.')
+      return
+    }
+
+    if (!isSupabaseConfigured()) {
+      const demoRef = `SNW-DEMO-${Date.now().toString().slice(-6)}`
+      setReference(demoRef)
+      setLastSubmitted(values)
+      pushToast('Demo booking created', 'success')
+      reset()
       return
     }
 
@@ -213,6 +239,12 @@ export function BookPage() {
       {shop && (
         <p className="rounded-md bg-slate-100 p-3 text-slate-700">
           Shop: <strong>{shop.name}</strong> — Resort: <strong>{shop.resorts?.name ?? 'Unknown'}</strong>
+        </p>
+      )}
+
+      {!isSupabaseConfigured() && (
+        <p className="rounded-md bg-amber-50 p-3 text-amber-800">
+          Demo mode: submitting this form will generate a demo reference without writing to database.
         </p>
       )}
 
