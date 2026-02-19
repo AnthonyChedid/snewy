@@ -54,3 +54,16 @@ test('unknown route shows 404 fallback page', async ({ page }) => {
   await page.getByRole('link', { name: 'Go Home' }).click()
   await expect(page).toHaveURL('/')
 })
+
+
+test('demo booking submission shows reference without login', async ({ page }) => {
+  await page.goto('/book/s1')
+  await page.getByLabel('Start date').fill('2026-02-22')
+  await page.getByLabel('End date').fill('2026-02-23')
+  await page.getByLabel('Height (cm)').fill('178')
+  await page.getByLabel('Weight (kg)').fill('74')
+  await page.getByLabel('Shoe size (EU)').fill('43')
+  await page.getByRole('button', { name: 'Submit request' }).click()
+  await expect(page.getByText(/Booking created\. Reference:/)).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Send booking to shop on WhatsApp' })).toBeVisible()
+})

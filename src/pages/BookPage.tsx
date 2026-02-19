@@ -162,10 +162,6 @@ export function BookPage() {
     setSubmitError('')
     setReference('')
 
-    if (!session) {
-      setSubmitError('Please login first to create a booking request.')
-      return
-    }
     if (!shop) {
       setSubmitError('Shop not found.')
       return
@@ -177,6 +173,11 @@ export function BookPage() {
       setLastSubmitted(values)
       pushToast('Demo booking created', 'success')
       reset()
+      return
+    }
+
+    if (!session) {
+      setSubmitError('Please login first to create a booking request.')
       return
     }
 
@@ -238,7 +239,13 @@ export function BookPage() {
     <section className="mx-auto max-w-2xl space-y-4">
       <h2 className="text-2xl font-semibold">Booking Request</h2>
 
-      {!session && (
+      {!session && !isSupabaseConfigured() && (
+        <p className="rounded-md bg-slate-100 p-3 text-slate-700">
+          Demo mode: you can submit without login to test the full booking UX.
+        </p>
+      )}
+
+      {!session && isSupabaseConfigured() && (
         <p className="rounded-md bg-amber-50 p-3 text-amber-800">
           You need to <Link to="/login" className="underline">login</Link> before submitting.
         </p>
