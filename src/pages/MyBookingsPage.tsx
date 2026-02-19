@@ -59,8 +59,14 @@ export function MyBookingsPage() {
       .eq('id', id)
       .eq('status', 'pending')
 
-    if (error) { setError(error.message); pushToast('Failed to load bookings', 'error'); logError('Load bookings failed', error.message) }
-    else await load()
+    if (error) {
+      setError(error.message)
+      pushToast('Failed to cancel booking', 'error')
+      logError('Cancel booking failed', error.message)
+    } else {
+      pushToast('Booking cancelled', 'success')
+      await load()
+    }
   }
 
   if (!session) {

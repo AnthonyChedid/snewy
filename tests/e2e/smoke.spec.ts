@@ -34,3 +34,15 @@ test('booking tier auto-adjusts when gear category changes', async ({ page }) =>
   await page.getByLabel('Gear').selectOption('snowboard')
   await expect(page.getByLabel('Tier')).toHaveValue('basic')
 })
+
+
+test('booking date validation prevents end date before start date', async ({ page }) => {
+  await page.goto('/book/s1')
+  await page.getByLabel('Start date').fill('2026-02-22')
+  await page.getByLabel('End date').fill('2026-02-20')
+  await page.getByLabel('Height (cm)').fill('175')
+  await page.getByLabel('Weight (kg)').fill('70')
+  await page.getByLabel('Shoe size (EU)').fill('42')
+  await page.getByRole('button', { name: 'Submit request' }).click()
+  await expect(page.getByText('End date must be on or after start date')).toBeVisible()
+})
