@@ -1,22 +1,40 @@
+import { lazy, Suspense } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth } from './auth/useAuth'
 import { RequireAuth } from './auth/RequireAuth'
-import { HomePage } from './pages/HomePage'
-import { ResortPage } from './pages/ResortPage'
-import { BookPage } from './pages/BookPage'
-import { MyBookingsPage } from './pages/MyBookingsPage'
-import { ShopPortalPage } from './pages/ShopPortalPage'
-import { AdminPage } from './pages/AdminPage'
-import { LoginPage } from './pages/LoginPage'
+
+const HomePage = lazy(() => import('./pages/HomePage').then((m) => ({ default: m.HomePage })))
+const ResortPage = lazy(() => import('./pages/ResortPage').then((m) => ({ default: m.ResortPage })))
+const BookPage = lazy(() => import('./pages/BookPage').then((m) => ({ default: m.BookPage })))
+const MyBookingsPage = lazy(() => import('./pages/MyBookingsPage').then((m) => ({ default: m.MyBookingsPage })))
+const ShopPortalPage = lazy(() => import('./pages/ShopPortalPage').then((m) => ({ default: m.ShopPortalPage })))
+const AdminPage = lazy(() => import('./pages/AdminPage').then((m) => ({ default: m.AdminPage })))
+const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })))
 
 const navItems = [
   { to: '/', label: 'Home' },
   { to: '/resorts/mzaar', label: 'Resort' },
-  { to: '/book/demo-shop-id', label: 'Book' },
+  { to: '/book/s1', label: 'Book' },
   { to: '/me', label: 'My Bookings' },
   { to: '/shop', label: 'Shop Portal' },
   { to: '/admin', label: 'Admin' },
 ]
+
+function RouteLoading() {
+  return <p className="rounded-md bg-white p-4 text-sm text-slate-600">Loading page…</p>
+}
+
+function NotFoundPage() {
+  return (
+    <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="text-xl font-semibold">Page not found</h2>
+      <p className="mt-2 text-slate-600">Try going back to Home and selecting a resort.</p>
+      <NavLink to="/" className="mt-4 inline-block rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
+        Go Home
+      </NavLink>
+    </section>
+  )
+}
 
 export default function App() {
   const { session, signOut } = useAuth()
@@ -59,22 +77,25 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/resorts/:slug" element={<ResortPage />} />
-          <Route path="/book/:shopId" element={<BookPage />} />
-          <Route
-            path="/me"
-            element={
-              <RequireAuth>
-                <MyBookingsPage />
-              </RequireAuth>
-            }
-          />
-          <Route path="/shop" element={<ShopPortalPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/login" element={<LoginPage />} />
-        </Routes>
+        <Suspense fallback={<RouteLoading />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/resorts/:slug" element={<ResortPage />} />
+            <Route path="/book/:shopId" element={<BookPage />} />
+            <Route
+              path="/me"
+              element={
+                <RequireAuth>
+                  <MyBookingsPage />
+                </RequireAuth>
+              }
+            />
+            <Route path="/shop" element={<ShopPortalPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   )
