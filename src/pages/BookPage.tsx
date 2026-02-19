@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../auth/useAuth'
@@ -8,7 +8,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { buildWhatsappLink, formatBookingWhatsappMessage } from '../lib/whatsapp'
 import { useToast } from '../components/useToast'
 import { logError, logInfo } from '../lib/logger'
-import { demoShops } from '../lib/demoData'
+import { demoPackages, demoShops } from '../lib/demoData'
 
 type ShopInfo = {
   id: string
@@ -68,8 +68,9 @@ export function BookPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
+    control,
     reset,
+    setValue,
   } = useForm<BookingFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -81,9 +82,7 @@ export function BookPage() {
     },
   })
 
-  // React Hook Form watch is expected here
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const selectedCategory = watch('gear_category')
+  const selectedCategory = useWatch({ control, name: 'gear_category' })
 
   useEffect(() => {
     if (!shopId) return
@@ -103,6 +102,7 @@ export function BookPage() {
           phone: null,
           resorts: { id: demo.resort_id, name: 'Demo Resort', slug: 'mzaar' },
         })
+        setPackages((demoPackages.filter((p) => p.shop_id === demo.id) as PricePackage[]))
         return
       }
       setLoadingShop(true)
@@ -148,6 +148,16 @@ export function BookPage() {
     return ordered.filter((t) => set.has(t))
   }, [packages, selectedCategory])
 
+
+  const selectedTier = useWatch({ control, name: 'tier' })
+
+  useEffect(() => {
+    if (availableTiers.length === 0) return
+    if (!selectedTier || !availableTiers.includes(selectedTier)) {
+      setValue('tier', availableTiers[0], { shouldValidate: true })
+    }
+  }, [availableTiers, selectedTier, setValue])
+
   const onSubmit = async (values: BookingFormValues) => {
     setSubmitError('')
     setReference('')
@@ -162,7 +172,7 @@ export function BookPage() {
     }
 
     if (!isSupabaseConfigured()) {
-      const demoRef = `SNW-DEMO-${Date.now().toString().slice(-6)}`
+      const demoRef = `SNW-DEMO-${values.start_date.replaceAll('-', '').slice(-6)}`
       setReference(demoRef)
       setLastSubmitted(values)
       pushToast('Demo booking created', 'success')

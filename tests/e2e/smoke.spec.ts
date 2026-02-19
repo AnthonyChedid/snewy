@@ -26,3 +26,11 @@ test('shop portal demo workflow updates booking status', async ({ page }) => {
   await page.getByRole('button', { name: 'Save update' }).click()
   await expect(page.getByRole('button', { name: /SNW-DEMO-1001 confirmed/i })).toBeVisible()
 })
+
+
+test('booking tier auto-adjusts when gear category changes', async ({ page }) => {
+  await page.goto('/book/s1')
+  await page.getByLabel('Tier').selectOption('standard')
+  await page.getByLabel('Gear').selectOption('snowboard')
+  await expect(page.getByLabel('Tier')).toHaveValue('basic')
+})
