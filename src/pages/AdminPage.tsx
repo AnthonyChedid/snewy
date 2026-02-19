@@ -93,7 +93,7 @@ export function AdminPage() {
     e.preventDefault()
     setError('')
     const { error } = await supabase.from('resorts').insert({ name: newResortName, slug: newResortSlug })
-    if (error) { setError(error.message); pushToast('Create shop failed', 'error'); logError('Create shop failed', error.message) }
+    if (error) { setError(error.message); pushToast('Create package failed', 'error'); logError('Create package failed', error.message) }
     else {
       setNewResortName('')
       setNewResortSlug('')
@@ -107,7 +107,7 @@ export function AdminPage() {
     const { error } = await supabase
       .from('shops')
       .insert({ resort_id: newShopResortId, name: newShopName, whatsapp: newShopWhatsapp || null })
-    if (error) { setError(error.message); pushToast('Create package failed', 'error'); logError('Create package failed', error.message) }
+    if (error) { setError(error.message); pushToast('Create shop failed', 'error'); logError('Create shop failed', error.message) }
     else {
       setNewShopName('')
       setNewShopWhatsapp('')
@@ -126,7 +126,7 @@ export function AdminPage() {
       price_lbp: Number(newPriceLbp),
       includes: newPriceCategory === 'ski' ? 'boots+skis+poles' : 'boots+board',
     })
-    if (error) { setError(error.message); pushToast('Create resort failed', 'error'); logError('Create resort failed', error.message) }
+    if (error) { setError(error.message); pushToast('Create package failed', 'error'); logError('Create package failed', error.message) }
     else {
       setNewPriceLbp('')
       await load()
